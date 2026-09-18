@@ -1,0 +1,10 @@
+[package]
+name = "vbar"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.104"
+# `v4_12` gets us `CssProvider::load_from_string`; GTK 4.12 is from 2023.
+gtk4 = { version = "0.11.4", features = ["v4_12"] }
+gtk4-layer-shell = "0.8.1"

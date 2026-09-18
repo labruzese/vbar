@@ -1,0 +1,97 @@
+/* vbar -- gruvbox dark. Flat: no rounding, no gradients, no shadows.
+ *
+ * GTK4 CSS has no custom properties, so the palette is spelled out inline:
+ *   bg0_h #1d2021   bg0 #282828   bg1 #3c3836   bg2 #504945   bg3 #665c54
+ *   fg0   #fbf1c7   fg1 #ebdbb2   fg2 #d5c4a1   fg4 #a89984   gray #928374
+ *   red   #fb4934   green #b8bb26 yellow #fabd2f blue #83a598 orange #fe8019
+ */
+
+window#vbar,
+window#vbar * {
+  font-family: "JetBrainsMono Nerd Font", "JetBrains Mono Nerd Font",
+               "JetBrains Mono", monospace;
+  font-size: 13px;
+  font-weight: normal;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+window#vbar {
+  background-color: #1d2021;
+  color: #ebdbb2;
+}
+
+.bar {
+  min-height: 26px;
+  background-color: #1d2021;
+  border-top: 1px solid #3c3836;
+}
+
+/* Generic text module: what `bar::label` gets you. */
+.module {
+  padding: 0 10px;
+  color: #a89984;
+}
+
+/* ---- workspaces ------------------------------------------------------- */
+
+.workspaces {
+  padding: 0;
+}
+
+.workspace {
+  padding: 0 9px;
+  color: #665c54;
+  background-color: transparent;
+}
+
+/* The active workspace reads like a neovim mode block. */
+.workspace.active {
+  color: #1d2021;
+  background-color: #b8bb26;
+  font-weight: bold;
+}
+
+/* ---- command line ----------------------------------------------------- */
+
+.cmdline {
+  padding: 0 8px;
+}
+
+.prompt {
+  color: #83a598;
+  padding-right: 6px;
+}
+
+/* GtkEntry draws through a child `text` node, so both have to be flattened. */
+entry.cmdline-entry,
+entry.cmdline-entry > text {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  outline: none;
+  min-height: 0;
+  padding: 0;
+  color: #ebdbb2;
+  caret-color: #fe8019;
+}
+
+entry.cmdline-entry:focus > text {
+  color: #fbf1c7;
+}
+
+entry.cmdline-entry > text > placeholder {
+  color: #504945;
+}
+
+entry.cmdline-entry > text > selection {
+  background-color: #504945;
+  color: #fbf1c7;
+}
+
+/* ---- clock ------------------------------------------------------------ */
+
+.clock {
+  color: #d5c4a1;
+}
