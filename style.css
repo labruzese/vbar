@@ -55,6 +55,13 @@ window#vbar {
   font-weight: bold;
 }
 
+/* ---- window title ----------------------------------------------------- */
+
+/* Named like a buffer, so it reads like one. */
+.window {
+  color: #d5c4a1;
+}
+
 /* ---- command line ----------------------------------------------------- */
 
 .cmdline {

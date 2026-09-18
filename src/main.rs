@@ -11,7 +11,7 @@ use gtk4::{self as gtk, gdk, glib, prelude::*};
 use gtk4_layer_shell::{Edge, KeyboardMode, Layer, LayerShell};
 
 use bar::{Bar, Section};
-use modules::{clock::Clock, command::CommandLine, workspaces::Workspaces};
+use modules::{clock::Clock, command::CommandLine, window::WindowTitle, workspaces::Workspaces};
 
 const APP_ID: &str = "dev.abruzese.vbar";
 
@@ -63,6 +63,10 @@ fn build(app: &gtk::Application) -> Result<()> {
     window.set_keyboard_mode(KeyboardMode::None);
 
     let bar = Bar::new();
+    match WindowTitle::new() {
+        Ok(title) => bar.push(Section::Left, &title),
+        Err(error) => eprintln!("vbar: window title module disabled: {error:#}"),
+    }
     bar.push(Section::Center, &CommandLine::new(&window));
     bar.push(Section::Right, &Clock::new("%a %d %b  %H:%M"));
     // Last of all, where neovim keeps its ruler.
