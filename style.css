@@ -36,20 +36,22 @@ window#vbar {
 
 /* ---- workspaces ------------------------------------------------------- */
 
+/* The row sits at the end of the bar and is read like neovim's ruler: plain
+ * text, tight enough that the numbers group into one figure rather than a row
+ * of buttons. */
 .workspaces {
-  padding: 0;
+  padding: 0 10px 0 4px;
 }
 
 .workspace {
-  padding: 0 9px;
-  color: #665c54;
+  padding: 0 4px;
+  color: #504945;
   background-color: transparent;
 }
 
-/* The active workspace reads like a neovim mode block. */
+/* Which one you are on, in the ruler's terms. */
 .workspace.active {
-  color: #1d2021;
-  background-color: #b8bb26;
+  color: #fabd2f;
   font-weight: bold;
 }
 
