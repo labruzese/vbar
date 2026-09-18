@@ -3,11 +3,26 @@
 //! Nothing is wired up behind it yet -- submitting a line just clears it. What
 //! the module does have to get right is keyboard focus, which on a layer surface
 //! is not the same problem as in an ordinary window.
+//!
+//! Opening it is the first half of that problem. A layer surface receives no key
+//! events until it asks the compositor for them, so there is no keystroke vbar
+//! can bind for itself: SUPER+; has to come from Hyprland, and it arrives as a
+//! submap change. That also makes the command line modal the way neovim's is --
+//! while the submap is active, none of your other binds fire.
+//!
+//!     hl.bind("SUPER + semicolon", hl.dsp.submap("vbar"))
+//!     hl.define_submap("vbar", function()
+//!       hl.bind("escape", hl.dsp.submap("reset"))
+//!     end)
 
 use gtk4::{self as gtk, gdk, glib, prelude::*};
 use gtk4_layer_shell::{KeyboardMode, LayerShell};
 
 use crate::bar::Module;
+use crate::hypr;
+
+/// The Hyprland submap the command line is the visible half of.
+const SUBMAP: &str = "vbar";
 
 pub struct CommandLine {
     root: gtk::Box,
@@ -28,39 +43,38 @@ impl CommandLine {
         entry.add_css_class("cmdline-entry");
         entry.set_has_frame(false);
         entry.set_hexpand(true);
-        entry.set_placeholder_text(Some("click to type a command"));
 
         root.append(&prompt);
         root.append(&entry);
 
-        // Clicking the bar opens the command line. It has to be a *click*: with
-        // `KeyboardMode::None` the surface receives no key events, so there is
-        // no keystroke we could bind to open it.
-        //
-        // The gesture runs in the capture phase, i.e. before the entry sees the
-        // click. That ordering matters -- the entry's own click handler grabs
-        // focus, and per `focus` below the keyboard mode has to be raised first.
-        let click = gtk::GestureClick::new();
-        click.set_propagation_phase(gtk::PropagationPhase::Capture);
-        click.connect_pressed({
+        // Hyprland reports submap changes as `submap>>NAME`, with an empty name
+        // for the default map. That one event is both the opening and the
+        // closing of the command line: the compositor owns the mode, and the bar
+        // follows it.
+        let watch = hypr::watch({
             let window = window.clone();
             let entry = entry.clone();
-            move |_, _, _, _| focus(&window, &entry)
+            move |event| match event.strip_prefix("submap>>") {
+                Some(SUBMAP) => focus(&window, &entry),
+                Some(_) => release(&window, &entry),
+                None => {}
+            }
         });
-        root.add_controller(click);
+        if let Err(error) = watch {
+            eprintln!("vbar: command line: cannot listen for SUPER+;: {error:#}");
+        }
 
-        // Escape hands the keyboard back to the rest of the desktop.
+        // Escape leaves the submap, the way `:`-Escape does in neovim.
         let keys = gtk::EventControllerKey::new();
         keys.connect_key_pressed({
             let window = window.clone();
             let entry = entry.clone();
-            move |_, key, _, _| {
-                if key == gdk::Key::Escape {
-                    release(&window, &entry);
+            move |_, key, _, _| match key {
+                gdk::Key::Escape => {
+                    stand_down(&window, &entry);
                     glib::Propagation::Stop
-                } else {
-                    glib::Propagation::Proceed
                 }
+                _ => glib::Propagation::Proceed,
             }
         });
         entry.add_controller(keys);
@@ -68,7 +82,7 @@ impl CommandLine {
         // Enter: there is no command grammar yet, so just stand down.
         entry.connect_activate({
             let window = window.clone();
-            move |entry| release(&window, entry)
+            move |entry| stand_down(&window, entry)
         });
 
         Self { root }
@@ -78,6 +92,20 @@ impl CommandLine {
 impl Module for CommandLine {
     fn widget(&self) -> gtk::Widget {
         self.root.clone().upcast()
+    }
+}
+
+/// Ask Hyprland to leave the submap.
+///
+/// The `submap>>` event that comes back is what actually closes the command
+/// line, so in the ordinary case there is nothing to do here but ask.
+fn stand_down(window: &gtk::ApplicationWindow, entry: &gtk::Entry) {
+    if let Err(error) = hypr::dispatch(r#"hl.dsp.submap("reset")"#) {
+        // A bar left holding `Exclusive` keyboard would make the rest of the
+        // desktop untypeable, so if the compositor will not close the mode for
+        // us, close it here.
+        eprintln!("vbar: command line: {error:#}");
+        release(window, entry);
     }
 }
 
@@ -92,7 +120,7 @@ impl Module for CommandLine {
 /// keystroke went to whatever window Hyprland still considered focused.
 ///
 /// `Exclusive` means the bar swallows *all* keyboard input while the command
-/// line is open, the way a launcher does. Escape gives it back.
+/// line is open, the way a launcher does. Leaving the submap gives it back.
 fn focus(window: &gtk::ApplicationWindow, entry: &gtk::Entry) {
     window.set_keyboard_mode(KeyboardMode::Exclusive);
     entry.grab_focus();
@@ -106,7 +134,7 @@ fn focus(window: &gtk::ApplicationWindow, entry: &gtk::Entry) {
 /// leaving a visibly focused entry -- and an input method still attached to it
 /// -- on a surface that no longer receives keys.
 fn release(window: &gtk::ApplicationWindow, entry: &gtk::Entry) {
-    // Abandon the half-typed line, the way `:`-Escape does in neovim.
+    // Abandon the half-typed line.
     entry.set_text("");
     // Nothing else on the bar is focusable, so clear focus rather than move it.
     // Spelled out because `Root` offers a `set_focus` of its own.

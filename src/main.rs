@@ -1,6 +1,7 @@
 //! vbar -- a neovim like Wayland status bar for Hyprland.
 
 mod bar;
+mod hypr;
 mod modules;
 
 use std::path::PathBuf;
@@ -10,7 +11,7 @@ use gtk4::{self as gtk, gdk, glib, prelude::*};
 use gtk4_layer_shell::{Edge, KeyboardMode, Layer, LayerShell};
 
 use bar::{Bar, Section};
-use modules::{clock::Clock, command::CommandLine, hyprland::Workspaces};
+use modules::{clock::Clock, command::CommandLine, workspaces::Workspaces};
 
 const APP_ID: &str = "dev.abruzese.vbar";
 
