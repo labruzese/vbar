@@ -44,6 +44,14 @@ impl CommandLine {
         entry.set_has_frame(false);
         entry.set_hexpand(true);
 
+        // The `:` is a mode indicator, not decoration: it appears with the
+        // keyboard and goes with it. Bound to the entry's focus rather than set
+        // by hand in `focus`/`release` so it cannot fall out of step with them.
+        entry
+            .bind_property("has-focus", &prompt, "visible")
+            .sync_create()
+            .build();
+
         root.append(&prompt);
         root.append(&entry);
 
