@@ -61,9 +61,25 @@ fn render(root: &gtk::Box) -> Result<()> {
         if Some(id) == active {
             cell.add_css_class("active");
         }
+        // A label has no notion of being pressed, so the click comes from a
+        // gesture attached to it.
+        let click = gtk::GestureClick::new();
+        click.connect_pressed(move |_, _, _, _| switch_to(id));
+        cell.add_controller(click);
         root.append(&cell);
     }
     Ok(())
+}
+
+/// Ask Hyprland to focus a workspace.
+///
+/// Nothing is repainted here: the compositor answers the switch with an event,
+/// and that is what redraws the row -- the same path a switch from a Hyprland
+/// keybind takes.
+fn switch_to(id: i32) {
+    if let Err(error) = hypr::dispatch(&format!("hl.dsp.focus({{ workspace = \"{id}\" }})")) {
+        eprintln!("vbar: workspaces: {error:#}");
+    }
 }
 
 /// Both `workspaces` and `activeworkspace` introduce each workspace with a
