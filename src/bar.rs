@@ -28,7 +28,7 @@ pub fn label(class: &str) -> gtk::Label {
 
 /// The bar's root widget plus its three slots.
 pub struct Bar {
-    root: gtk::Box,
+    root: gtk::CenterBox,
     left: gtk::Box,
     center: gtk::Box,
     right: gtk::Box,
@@ -36,21 +36,21 @@ pub struct Bar {
 
 impl Bar {
     pub fn new() -> Self {
-        let slot = |class: &str, expand: bool| {
+        let slot = |class: &str| {
             let slot = gtk::Box::new(gtk::Orientation::Horizontal, 0);
             slot.add_css_class(class);
-            slot.set_hexpand(expand);
             slot
         };
-        let left = slot("left", false);
-        let center = slot("center", true);
-        let right = slot("right", false);
+        let left = slot("left");
+        let center = slot("center");
+        let right = slot("right");
 
-        let root = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+        let root = gtk::CenterBox::new();
         root.add_css_class("bar");
-        for slot in [&left, &center, &right] {
-            root.append(slot);
-        }
+
+        root.set_start_widget(Some(&left));
+        root.set_center_widget(Some(&center));
+        root.set_end_widget(Some(&right));
 
         Self { root, left, center, right }
     }
@@ -65,7 +65,7 @@ impl Bar {
         slot.append(&module.widget());
     }
 
-    pub fn root(&self) -> &gtk::Box {
+    pub fn root(&self) -> &gtk::CenterBox {
         &self.root
     }
 }

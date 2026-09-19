@@ -49,7 +49,8 @@ impl CommandLine {
         let entry = gtk::Entry::new();
         entry.add_css_class("cmdline-entry");
         entry.set_has_frame(false);
-        entry.set_hexpand(true);
+
+        entry.set_width_chars(48);
 
         root.append(&prompt);
         root.append(&entry);

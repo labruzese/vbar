@@ -20,7 +20,7 @@ impl WindowTitle {
         let refresh = {
             let label = label.clone();
             move || match title() {
-                Ok(Some(title)) => label.set_text(&format!("win/{title}.win")),
+                Ok(Some(title)) => label.set_text(&format!("> {title}")),
                 // Nothing focused, so there is nothing to name.
                 Ok(None) => label.set_text(""),
                 Err(error) => {

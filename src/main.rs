@@ -63,18 +63,21 @@ fn build(app: &gtk::Application) -> Result<()> {
     window.set_keyboard_mode(KeyboardMode::None);
 
     let bar = Bar::new();
-    bar.push(Section::Center, &CommandLine::new(&window));
-    bar.push(Section::Right, &Clock::new("%a %d %b  %H:%M"));
-    // Last of all, where neovim keeps its ruler.
+    bar.push(Section::Center, &Clock::new("%a %d %b %I:%M %p"));
+
+    match WindowTitle::new() {
+        Ok(title) => bar.push(Section::Right, &title),
+        Err(error) => eprintln!("vbar: window title module disabled: {error:#}"),
+    }
+
     match Workspaces::new() {
         Ok(workspaces) => bar.push(Section::Left, &workspaces),
         // Not being under Hyprland costs you one module, not the bar.
         Err(error) => eprintln!("vbar: workspaces module disabled: {error:#}"),
     }
-    match WindowTitle::new() {
-        Ok(title) => bar.push(Section::Right, &title),
-        Err(error) => eprintln!("vbar: window title module disabled: {error:#}"),
-    }
+
+    bar.push(Section::Left, &CommandLine::new(&window));
+
 
     window.set_child(Some(bar.root()));
     window.present();
