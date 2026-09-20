@@ -6,7 +6,7 @@ import QtQuick
 /// overrides only what makes it that module. Colour and padding are ordinary
 /// properties, so a module that wants different ones just sets them.
 Text {
-    font.families: Theme.fontFamilies
+    font.family: Theme.fontFamily
     font.pixelSize: Theme.fontPixelSize
     color: Theme.foreground
 

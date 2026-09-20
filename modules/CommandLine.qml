@@ -97,7 +97,7 @@ Row {
         // it does not shunt the rest of the bar sideways.
         width: Theme.commandWidth
 
-        font.families: Theme.fontFamilies
+        font.family: Theme.fontFamily
         font.pixelSize: Theme.fontPixelSize
         renderType: Text.NativeRendering
 

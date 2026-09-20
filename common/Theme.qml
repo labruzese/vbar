@@ -1,5 +1,7 @@
 pragma Singleton
 
+// QtQuick, for the `color` value type the palette below is declared with.
+import QtQuick
 import Quickshell
 
 /// vbar -- gruvbox dark. Flat: no rounding, no gradients, no shadows.
@@ -54,9 +56,20 @@ Singleton {
     /// Between the `:` and what you are typing after it.
     readonly property int commandPromptGap: 6
 
-    /// Qt tries these in order, so the Nerd Font is used where it is installed
-    /// and the plain family where it is not.
-    readonly property var fontFamilies: ["JetBrainsMono Nerd Font", "JetBrains Mono Nerd Font", "JetBrains Mono", "monospace"]
+    /// The families we would like, most preferred first.
+    readonly property var fontPreference: ["JetBrainsMono Nerd Font", "JetBrains Mono Nerd Font", "JetBrains Mono"]
+
+    /// The first of those actually installed.
+    ///
+    /// Qt's `font` takes one family and has no CSS-style fallback list -- its
+    /// own fallback is per-character, for glyphs a font lacks, not for a font
+    /// that is missing altogether. So the chain is resolved here, once, instead
+    /// of at every use.
+    readonly property string fontFamily: {
+        const installed = Qt.fontFamilies();
+        return root.fontPreference.find(family => installed.includes(family)) ?? "monospace";
+    }
+
     readonly property int fontPixelSize: 13
 
     /// How much of the bar a single window title may take before it is elided.

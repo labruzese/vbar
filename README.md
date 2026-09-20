@@ -135,3 +135,12 @@ go-to-definition for both Quickshell types and this configuration's own. It is
 machine-specific and gitignored.
 
 Quickshell hot-reloads on save, so there is no build step.
+
+With that file in place `qmllint` can resolve both Quickshell's types and this
+configuration's own, which catches the errors Quickshell only reports one at a
+time at startup — a property that does not exist, or a value type whose module
+was never imported:
+
+```sh
+qmllint $(git ls-files '*.qml')
+```
