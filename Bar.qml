@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
@@ -70,49 +69,54 @@ PanelWindow {
         color: Theme.border
     }
 
-    RowLayout {
-        anchors.fill: parent
-        anchors.topMargin: rule.height
-        spacing: 0
+    // Three slots sharing the bar's full height below the rule, differing
+    // only in where they sit across it.
+    //
+    // The centre is anchored to the *window's* centre, not to the middle of
+    // whatever the other two leave over -- so the clock holds still while a
+    // window title grows or the command line opens. That is what a GtkCenterBox
+    // did, and it is the whole point of a statusline you read at a glance.
+    //
+    // Nothing clamps the slots off each other, so both sides are capped
+    // instead: the title elides at Theme.titleMaxWidth and the command line is
+    // a fixed width. Below roughly 700px of bar those caps stop being enough
+    // and the right group would reach the clock.
 
-        // ---- left ----------------------------------------------------------
-
-        Row {
-            Layout.fillHeight: true
-
-            Workspaces {
-                anchors.verticalCenter: parent.verticalCenter
-            }
-
-            CommandLine {
-                id: commandLine
-
-                anchors.verticalCenter: parent.verticalCenter
-            }
+    Row {
+        anchors {
+            left: parent.left
+            top: rule.bottom
+            bottom: parent.bottom
         }
 
-        // ---- centre --------------------------------------------------------
-
-        // The filler takes up whatever the groups either side leave, so the
-        // clock sits midway between them. It is pushed aside as the command
-        // line grows rather than being overlapped by it.
-        Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            Clock {
-                anchors.centerIn: parent
-            }
+        Workspaces {
+            anchors.verticalCenter: parent.verticalCenter
         }
 
-        // ---- right ---------------------------------------------------------
+        CommandLine {
+            id: commandLine
 
-        Row {
-            Layout.fillHeight: true
+            anchors.verticalCenter: parent.verticalCenter
+        }
+    }
 
-            WindowTitle {
-                anchors.verticalCenter: parent.verticalCenter
-            }
+    Clock {
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            top: rule.bottom
+            bottom: parent.bottom
+        }
+    }
+
+    Row {
+        anchors {
+            right: parent.right
+            top: rule.bottom
+            bottom: parent.bottom
+        }
+
+        WindowTitle {
+            anchors.verticalCenter: parent.verticalCenter
         }
     }
 }
